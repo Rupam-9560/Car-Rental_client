@@ -11,7 +11,11 @@ const Logout = () => {
         withCredentials: true,
       });
 
-      alert("Logged out successfully");
+      localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("selectedCar");
+
+      
       navigate("/login"); // redirect to login page
     } catch (error) {
       console.error(error);

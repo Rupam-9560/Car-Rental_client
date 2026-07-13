@@ -45,8 +45,12 @@ export default function UserDashboard() {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
+        const token = localStorage.getItem("token");
         const authRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/dashboard`, {
           withCredentials: true,
+          headers: {                              
+           Authorization: `Bearer ${token}`
+          }
         })
 
         setUser(authRes.data.user)

@@ -14,20 +14,19 @@ export function LoginForm() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+  e.preventDefault()
+  try {
+    const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/login`, form, {
+      withCredentials: true,
+    })
 
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/login`, form, {
-        withCredentials: true,
-      })
-
-      localStorage.setItem("user", JSON.stringify(res.data.user))
-      alert("Login Successful")
-      navigate("/user/dashboard")
-    } catch (err) {
-      alert(err.response?.data?.message || "Login failed")
-    }
+    localStorage.setItem("user", JSON.stringify(res.data.user))
+    localStorage.setItem("token", res.data.token) // ye add karo
+    navigate("/user/dashboard")
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed")
   }
+}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#fffaf5] px-4 py-8 sm:px-6">
