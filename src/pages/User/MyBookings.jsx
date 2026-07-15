@@ -141,7 +141,7 @@ export default function MyBookings() {
                         <td className="p-4">
                           <div className="flex min-w-52 items-center gap-3">
                             <img
-                              src={getImageUrl(
+                              src={`${import.meta.env.VITE_BASE_URL}${car.image}`(
                                 booking.vehicle?.image
                               )}
                               alt={
