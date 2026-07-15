@@ -11,6 +11,16 @@ export default function BookCar() {
   const user = JSON.parse(localStorage.getItem("user"))
   const car = JSON.parse(localStorage.getItem("selectedCar"))
 
+
+  const getImageUrl = (image) => {
+  if (!image) {
+    return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900"
+  }
+  return image.startsWith("http")
+    ? image
+    : `${import.meta.env.VITE_BASE_URL}${image}`
+}
+
   const [form, setForm] = useState({
     pickupDate: "",
     returnDate: "",
@@ -71,7 +81,7 @@ export default function BookCar() {
           {/* Vehicle Display Details Panel */}
           <div className="overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
             <img
-              src={`${import.meta.env.VITE_BASE_URL}${car.image}`}
+              src={getImageUrl(car.image)}
               alt={car.vehicleName}
               className="h-48 sm:h-64 md:h-72 w-full object-cover"
             />
