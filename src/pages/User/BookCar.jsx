@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useState, useRef } from "react"
 import axios from "axios"
 import { Calendar, MapPin, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,9 @@ export default function BookCar() {
   const [open, setOpen] = useState(false)
   const user = JSON.parse(localStorage.getItem("user"))
   const car = JSON.parse(localStorage.getItem("selectedCar"))
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const searchTimeout = useRef(null)
 
 
   const getImageUrl = (image) => {
@@ -45,6 +49,44 @@ export default function BookCar() {
     })
   }
 
+  const handleLocationSearch = (value) => {
+  setForm({ ...form, pickupLocation: value })
+
+  if (searchTimeout.current) clearTimeout(searchTimeout.current)
+
+  if (value.length < 3) {
+    setSuggestions([])
+    setShowSuggestions(false)
+    return
+  }
+
+  searchTimeout.current = setTimeout(async () => {
+    try {
+      const res = await axios.get(
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            q: value,
+            format: "json",
+            addressdetails: 1,
+            limit: 5,
+            countrycodes: "in",
+          },
+        }
+      )
+      setSuggestions(res.data)
+      setShowSuggestions(true)
+    } catch (err) {
+      console.log("Location search error:", err)
+    }
+  }, 400)
+}
+
+const handleSelectLocation = (place) => {
+  setForm({ ...form, pickupLocation: place.display_name })
+  setSuggestions([])
+  setShowSuggestions(false)
+}
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -125,16 +167,36 @@ export default function BookCar() {
                 />
               </Field>
 
-              <Field icon={<MapPin size={18} />} label="Pickup Location">
-                <Input
-                  name="pickupLocation"
-                  value={form.pickupLocation}
-                  onChange={handleChange}
-                  placeholder="Enter pickup location"
-                  className="border-0 focus-visible:ring-0 text-sm sm:text-base py-2.5 sm:py-3 h-auto shadow-none text-gray-900 placeholder:text-gray-400"
-                  required
-                />
-              </Field>
+              <div className="relative w-full">
+  <Field icon={<MapPin size={18} />} label="Pickup Location">
+    <Input
+      name="pickupLocation"
+      value={form.pickupLocation}
+      onChange={(e) => handleLocationSearch(e.target.value)}
+      onFocus={() => form.pickupLocation.length >= 3 && setShowSuggestions(true)}
+      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+      placeholder="Enter pickup location"
+      className="border-0 focus-visible:ring-0 text-sm sm:text-base py-2.5 sm:py-3 h-auto shadow-none text-gray-900 placeholder:text-gray-400"
+      autoComplete="off"
+      required
+    />
+  </Field>
+
+  {showSuggestions && suggestions.length > 0 && (
+    <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
+      {suggestions.map((place, idx) => (
+        <button
+          type="button"
+          key={idx}
+          onClick={() => handleSelectLocation(place)}
+          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 border-b border-gray-50 last:border-0 transition-colors"
+        >
+          {place.display_name}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
               <div>
                 <label className="mb-1.5 block text-sm sm:text-base font-semibold text-gray-800">Message</label>
